@@ -1,0 +1,144 @@
+{
+  "project": {
+    "projectSettingsVersion": "2.0.0",
+    "initialAutoPluginCount": 0,
+    "currentBuildConfiguration": "Android",
+    "projectFiles": {},
+    "projectDirectories": {}
+  },
+  "iot-tab": {
+    "fileStatus": {
+      "aws.xdk": {
+        "previousModTime": 1457189296246,
+        "modified": 1457189296246,
+        "seen": true,
+        "name": "aws.xdk"
+      },
+      "aws.xdke": {
+        "previousModTime": 1457188879962,
+        "modified": 1457188879962,
+        "seen": true,
+        "name": "aws.xdke"
+      },
+      ".gitignore": {
+        "previousModTime": 1457188372674,
+        "modified": 1457188372674,
+        "seen": true,
+        "name": ".gitignore"
+      },
+      "main.js": {
+        "previousModTime": 1457192214150,
+        "modified": 1457192214150,
+        "seen": true,
+        "name": "main.js"
+      },
+      "package.json": {
+        "previousModTime": 1457189213750,
+        "modified": 1457189213750,
+        "seen": true,
+        "name": "package.json"
+      },
+      "README.md": {
+        "previousModTime": 1457188334598,
+        "modified": 1457188334598,
+        "seen": true,
+        "name": "README.md"
+      },
+      ".idea/automatic_watering_system.iml": {
+        "previousModTime": 1457188353978,
+        "modified": 1457188353978,
+        "seen": true,
+        "name": ".idea/automatic_watering_system.iml"
+      },
+      ".idea/jsLibraryMappings.xml": {
+        "previousModTime": 1457188971730,
+        "modified": 1457188971730,
+        "seen": true,
+        "name": ".idea/jsLibraryMappings.xml"
+      },
+      ".idea/misc.xml": {
+        "previousModTime": 1457188353986,
+        "modified": 1457188353986,
+        "seen": true,
+        "name": ".idea/misc.xml"
+      },
+      ".idea/modules.xml": {
+        "previousModTime": 1457188354030,
+        "modified": 1457188354030,
+        "seen": true,
+        "name": ".idea/modules.xml"
+      },
+      ".idea/.name": {
+        "previousModTime": 1457188353938,
+        "modified": 1457188353938,
+        "seen": true,
+        "name": ".idea/.name"
+      },
+      ".idea/vcs.xml": {
+        "previousModTime": 1457188364018,
+        "modified": 1457188364018,
+        "seen": true,
+        "name": ".idea/vcs.xml"
+      },
+      ".idea/watcherTasks.xml": {
+        "previousModTime": 1457189213766,
+        "modified": 1457189213766,
+        "seen": true,
+        "name": ".idea/watcherTasks.xml"
+      },
+      ".idea/workspace.xml": {
+        "previousModTime": 1457192214162,
+        "modified": 1457192214162,
+        "seen": true,
+        "name": ".idea/workspace.xml"
+      },
+      ".idea/inspectionProfiles/profiles_settings.xml": {
+        "previousModTime": 1457188971678,
+        "modified": 1457188971678,
+        "seen": true,
+        "name": ".idea/inspectionProfiles/profiles_settings.xml"
+      },
+      ".idea/inspectionProfiles/Project_Default.xml": {
+        "previousModTime": 1457188971686,
+        "modified": 1457188971686,
+        "seen": true,
+        "name": ".idea/inspectionProfiles/Project_Default.xml"
+      },
+      ".idea/jsLinters/jshint.xml": {
+        "previousModTime": 1457188971718,
+        "modified": 1457188971718,
+        "seen": true,
+        "name": ".idea/jsLinters/jshint.xml"
+      },
+      "utils/Resistance.js": {
+        "previousModTime": 1457192142930,
+        "modified": 1457192142930,
+        "seen": true,
+        "name": "utils/Resistance.js"
+      },
+      "xdk/project-info.json": {
+        "previousModTime": 1457188879934,
+        "modified": 1457188879934,
+        "seen": true,
+        "name": "xdk/project-info.json"
+      }
+    },
+    "boardFileStatus": {
+      "main.js": {
+        "previousModTime": 1457192242279
+      },
+      "package.json": {
+        "previousModTime": 1457192242279
+      },
+      "README.md": {
+        "previousModTime": 1457192242279
+      },
+      "utils/Resistance.js": {
+        "previousModTime": 1457192242279
+      },
+      "xdk/project-info.json": {
+        "previousModTime": 1457192242279
+      }
+    }
+  }
+}

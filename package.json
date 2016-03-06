@@ -1,0 +1,29 @@
+{
+  "name": "automatic_watering_system",
+  "description": "",
+  "version": "0.0.1",
+  "main": "main.js",
+  "engines": {
+    "node": ">=0.10.0"
+  },
+  "dependencies": {
+    "deepstream.io": "^0.8.1",
+    "mraa": "^0.9.5"
+  },
+  "jshintConfig": {
+    "predef": [],
+    "bitwise": true,
+    "curly": true,
+    "eqeqeq": true,
+    "forin": true,
+    "noarg": true,
+    "noempty": true,
+    "nonew": true,
+    "undef": true,
+    "strict": true,
+    "esnext": true,
+    "browser": true,
+    "jquery": true,
+    "node": true
+  }
+}
