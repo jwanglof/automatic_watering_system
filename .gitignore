@@ -75,3 +75,9 @@ target/
 .env
 
 .idea
+
+# Virtual env
+venv
+
+# RethinkDBs data folder
+rethinkdb_data

@@ -1,0 +1,4 @@
+# Install all these requirements by running this: pip install -r requirements.txt
+
+Wiring-x86==1.0.0
+rethinkdb==2.2.0.post5
