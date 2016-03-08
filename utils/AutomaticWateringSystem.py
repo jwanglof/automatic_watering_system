@@ -61,7 +61,8 @@ class AutomaticWateringSystem(object):
             self.MoistureSensor = Moisture(self.gpio, self.__uuid, moisture_pin, name, debug)  # type: Moisture
 
     def run(self):
-
+        # TODO Run the different sensor-checks!
+        pass
 
     def cleanup(self):
         self.gpio.cleanup()
