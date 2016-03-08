@@ -2,3 +2,5 @@
 
 Wiring-x86==1.0.0
 rethinkdb==2.2.0.post5
+blinker==1.4
+twisted==15.5.0
