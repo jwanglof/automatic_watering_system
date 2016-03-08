@@ -1,40 +1,75 @@
 #!/usr/bin/env python
 # coding=utf-8
+from inspect import currentframe
+from uuid import uuid4
+
 from wiringx86 import GPIOGalileoGen2 as GPIO
 
+from utils.MagneticValve import MagneticValve
 from utils.print_debug import print_debug
+from utils.Temperature import Temperature
+from utils.Moisture import Moisture
 
 
 class AutomaticWateringSystem(object):
+    """
+    Main class for the Automatic Watering System (AWS)
+    Will initiate the classes needed for a plant
+    """
+    def __init__(self, name, temperature_pin=None, magnetic_valve_pin=None, moisture_pin=None, debug=False):
+        """
+        Constructor
 
-    def __init__(self, debug):
+        :type name: str
+        :param name: The name of the plant
+
+        :type temperature_pin: int
+        :param temperature_pin: Which pin the temperature sensor is attached to
+
+        :type magnetic_valve_pin: int
+        :param magnetic_valve_pin: Which pin the magnetic valve is attached to
+
+        :type moisture_pin: int
+        :param moisture_pin: Which pin the moisture sensor is attached to
+
+        :type debug: bool
+        :param debug:
+        """
+        print_debug(debug, currentframe().f_code.co_name, 'Init %s' % name)
+
+        self.__name = name
+        self.__temperature_pin = temperature_pin
+        self.__magnetic_valve_pin = magnetic_valve_pin
+        self.__moisture_pin = moisture_pin
         self.debug = debug
 
+        # Get a uuid for the class so we can identify easier
+        self.__uuid = str(uuid4())  # type: uuid4
+
         # Get a new instance of the GPIO
-        self.gpio = GPIO(debug=debug)
+        self.gpio = GPIO(debug=debug)  # type: GPIO
 
-        # self.queue = WateringQueue()
+        if temperature_pin:
+            self.TemperatureSensor = Temperature(self.gpio, self.__uuid, temperature_pin,
+                                                 name, 30, debug)  # type: Temperature
 
-        # self.__setup_temperature(temperature_pin)
+        if magnetic_valve_pin:
+            self.MagneticValve = MagneticValve(self.gpio, self.__uuid, magnetic_valve_pin,
+                                               name, debug)  # type: MagneticValve
 
-    # def __setup_temperature(self, temperature_pin):
-    #     self.GetTemperature = Temperature(self.gpio, analogPins.get(temperature_pin))
+        if moisture_pin:
+            self.MoistureSensor = Moisture(self.gpio, self.__uuid, moisture_pin, name, debug)  # type: Moisture
 
-    # # def get_temperature(self, celsius=True, fahrenheit=False, raw=False):
-    # def get_temperature(self, **kwargs):
-    #     # if kwargs.get('celsius'):
-    #     # if celsius:
-    #     if kwargs.get('fahrenheit'):
-    #     # elif fahrenheit:
-    #         return self.GetTemperature.get_fahrenheit()
-    #     elif kwargs.get('raw'):
-    #     # elif raw:
-    #         return self.GetTemperature.get_current_read()
-    #     else:
-    #         return self.GetTemperature.get_celsius()
+    def run(self):
 
-    def print_debug(self, func_name, text):
-        print_debug(self.debug, func_name, text)
-        # if self.debug:
-        #     now = datetime.now().strftime("%B %d %I:%M:%S")
-        #     print '{0} {1: <20}{2}'.format(now, func_name + ':', text)
+
+    def cleanup(self):
+        self.gpio.cleanup()
+
+    @property
+    def get_name(self):
+        return self.__name
+
+    @property
+    def get_uuid(self):
+        return self.__uuid
