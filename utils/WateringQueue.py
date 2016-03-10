@@ -4,8 +4,8 @@ from inspect import currentframe
 
 from blinker import signal
 
+from AWS.MagneticValve import MagneticValve
 from utils import blinker_signals
-from utils.MagneticValve import MagneticValve
 from utils.print_debug import print_debug
 
 

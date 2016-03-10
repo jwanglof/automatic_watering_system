@@ -5,10 +5,10 @@ from uuid import uuid4
 
 from wiringx86 import GPIOGalileoGen2 as GPIO
 
-from utils.MagneticValve import MagneticValve
+from AWS.MagneticValve import MagneticValve
+from AWS.Moisture import Moisture
+from AWS.Temperature import Temperature
 from utils.print_debug import print_debug
-from utils.Temperature import Temperature
-from utils.Moisture import Moisture
 
 
 class AutomaticWateringSystem(object):

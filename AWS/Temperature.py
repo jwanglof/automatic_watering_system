@@ -3,7 +3,7 @@
 from inspect import currentframe
 from math import log
 
-import convert_voltage
+import utils.convert_voltage
 from utils.print_debug import print_debug
 
 
@@ -80,6 +80,6 @@ class Temperature:
     def __get_resistance(self):
         # //get the resistance of the sensor;
         # var resistance = (1023 - a) * 10000 / a;
-        resistance = (convert_voltage.voltage_resolution - self.get_raw_read()) * 10000 / self.get_raw_read()
+        resistance = (utils.convert_voltage.voltage_resolution - self.get_raw_read()) * 10000 / self.get_raw_read()
         print_debug(self.debug, currentframe().f_code.co_name, 'Resistance: ' + str(resistance))
         return resistance
