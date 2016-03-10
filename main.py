@@ -2,8 +2,11 @@
 # coding=utf-8
 import time
 
-from utils.AutomaticWateringSystem import AutomaticWateringSystem
+from AutomaticWateringSystem import AutomaticWateringSystem
+from utils.Database import Database
 from utils.WateringQueue import WateringQueue
+
+from website import app
 
 # TODO
 # Om det inte rinner något vatten ska summern låta (måste ha en Grove som kollar vattenflödet då!)
@@ -25,64 +28,68 @@ from utils.WateringQueue import WateringQueue
 ValveQueue = WateringQueue(True)
 
 if __name__ == '__main__':
-    # # NOTE: There will exist one class PER temperature sensor
-    # temperature_pin = 0
-    # GetTemperature = Temperature(analogPins.get(temperature_pin), 30)
+    database = Database()
+    app = app.create_app()
+    app.run(debug=True)
+
+    # # # NOTE: There will exist one class PER temperature sensor
+    # # temperature_pin = 0
+    # # GetTemperature = Temperature(analogPins.get(temperature_pin), 30)
+    # #
+    # # # NOTE: There will exist one class PER magnetic valve
+    # # magnetic_valve_pin = 6
+    # # ChiliMagneticValve = MagneticValve(digitalPins.get(magnetic_valve_pin), 'CHILI #1', True)
+    # #
+    # # buzzer_pin = 3
+    # # FlowerMagneticValve = MagneticValve(digitalPins.get(buzzer_pin), 'FLOWER #1', True)
+    # #
     #
-    # # NOTE: There will exist one class PER magnetic valve
-    # magnetic_valve_pin = 6
-    # ChiliMagneticValve = MagneticValve(digitalPins.get(magnetic_valve_pin), 'CHILI #1', True)
+    # # database = Database()
+    # AWS = AutomaticWateringSystem('LED', temperature_pin=0, magnetic_valve_pin=6, debug=True)
+    # AWS2 = AutomaticWateringSystem('BUZZER', temperature_pin=0, magnetic_valve_pin=8, debug=True)
     #
-    # buzzer_pin = 3
-    # FlowerMagneticValve = MagneticValve(digitalPins.get(buzzer_pin), 'FLOWER #1', True)
+    # try:
+    #     while True:
+    #         print 'LOOOOP'
+    #         AWS.MagneticValve.send_open_valve_signal()
+    #         AWS2.MagneticValve.send_open_valve_signal()
+    #         # temp = GetTemperature.get_celsius()
+    #         # database.add_statistic(temperature=temp)
+    #         # print 'Exceeded: ' + str(GetTemperature.has_exceeded_threshold())
+    #         # print 'Temp: ' + str(GetTemperature.get_celsius())
+    #         # print 'Added: ' + str(ChiliMagneticValve.is_added_to_queue)
+    #         # print 'Added 2: ' + str(FlowerMagneticValve.is_added_to_queue)
     #
-
-    # database = Database()
-    AWS = AutomaticWateringSystem('LED', temperature_pin=0, magnetic_valve_pin=6, debug=True)
-    AWS2 = AutomaticWateringSystem('BUZZER', temperature_pin=0, magnetic_valve_pin=8, debug=True)
-
-    try:
-        while True:
-            print 'LOOOOP'
-            AWS.MagneticValve.send_open_valve_signal()
-            AWS2.MagneticValve.send_open_valve_signal()
-            # temp = GetTemperature.get_celsius()
-            # database.add_statistic(temperature=temp)
-            # print 'Exceeded: ' + str(GetTemperature.has_exceeded_threshold())
-            # print 'Temp: ' + str(GetTemperature.get_celsius())
-            # print 'Added: ' + str(ChiliMagneticValve.is_added_to_queue)
-            # print 'Added 2: ' + str(FlowerMagneticValve.is_added_to_queue)
-
-            # try:
-            #     if GetTemperature.has_exceeded_threshold() and not ChiliMagneticValve.is_added_to_queue:
-            #         # gpio.digitalWrite(buzzerPin, gpio.HIGH)
-            #         # gpio.digitalWrite(led_pin, gpio.HIGH)
-            #         ValveQueue.add_valve(ChiliMagneticValve)
-            #         ValveQueue.open_next()
-            #     elif not GetTemperature.has_exceeded_threshold() and ChiliMagneticValve.is_added_to_queue:
-            #         # gpio.digitalWrite(buzzerPin, gpio.LOW)
-            #         # gpio.digitalWrite(led_pin, gpio.LOW)
-            #         ValveQueue.close_current()
-            # except IndexError as e:
-            #     print e
-            #
-            # try:
-            #     if GetTemperature.has_exceeded_threshold() and not FlowerMagneticValve.is_added_to_queue:
-            #         # gpio.digitalWrite(buzzerPin, gpio.HIGH)
-            #         # gpio.digitalWrite(led_pin, gpio.HIGH)
-            #         ValveQueue.add_valve(FlowerMagneticValve)
-            #         ValveQueue.open_next()
-            #     elif not GetTemperature.has_exceeded_threshold() and FlowerMagneticValve.is_added_to_queue:
-            #         # gpio.digitalWrite(buzzerPin, gpio.LOW)
-            #         # gpio.digitalWrite(led_pin, gpio.LOW)
-            #         ValveQueue.close_current()
-            # except IndexError as e:
-            #     print e
-
-            time.sleep(2)
-    except KeyboardInterrupt:
-        # GetTemperature.gpio.cleanup()
-        print 'CLEEEEEANUP'
+    #         # try:
+    #         #     if GetTemperature.has_exceeded_threshold() and not ChiliMagneticValve.is_added_to_queue:
+    #         #         # gpio.digitalWrite(buzzerPin, gpio.HIGH)
+    #         #         # gpio.digitalWrite(led_pin, gpio.HIGH)
+    #         #         ValveQueue.add_valve(ChiliMagneticValve)
+    #         #         ValveQueue.open_next()
+    #         #     elif not GetTemperature.has_exceeded_threshold() and ChiliMagneticValve.is_added_to_queue:
+    #         #         # gpio.digitalWrite(buzzerPin, gpio.LOW)
+    #         #         # gpio.digitalWrite(led_pin, gpio.LOW)
+    #         #         ValveQueue.close_current()
+    #         # except IndexError as e:
+    #         #     print e
+    #         #
+    #         # try:
+    #         #     if GetTemperature.has_exceeded_threshold() and not FlowerMagneticValve.is_added_to_queue:
+    #         #         # gpio.digitalWrite(buzzerPin, gpio.HIGH)
+    #         #         # gpio.digitalWrite(led_pin, gpio.HIGH)
+    #         #         ValveQueue.add_valve(FlowerMagneticValve)
+    #         #         ValveQueue.open_next()
+    #         #     elif not GetTemperature.has_exceeded_threshold() and FlowerMagneticValve.is_added_to_queue:
+    #         #         # gpio.digitalWrite(buzzerPin, gpio.LOW)
+    #         #         # gpio.digitalWrite(led_pin, gpio.LOW)
+    #         #         ValveQueue.close_current()
+    #         # except IndexError as e:
+    #         #     print e
+    #
+    #         time.sleep(2)
+    # except KeyboardInterrupt:
+    #     # GetTemperature.gpio.cleanup()
+    #     print 'CLEEEEEANUP'
 
 
 # # pin = 13

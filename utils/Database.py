@@ -1,8 +1,16 @@
 #!/usr/bin/env python
 # coding=utf-8
+from os import environ
 from time import time
 import rethinkdb as r
 from rethinkdb.errors import RqlRuntimeError, ReqlUserError
+
+try:
+    RDB_HOST = environ["RDB_HOST"]
+    RDB_PORT = environ["RDB_PORT"]
+except KeyError:
+    RDB_HOST = 'localhost'
+    RDB_PORT = '28015'
 
 DB_AWS = 'aws'
 
@@ -26,12 +34,20 @@ TABLE_OWN_PLANT_CREATED = 'created'
 TABLE_OWN_PLANT_PLANT_ID = 'plant_id'
 TABLE_OWN_PLANT_DESCRIPTION = 'description'
 
+# DB_TABLES = {
+#     DB_AWS: [
+#         TABLE_STATISTICS,
+#         TABLE_PLANT,
+#         TABLE_OWN_PLANT
+#     ]
+# }
 
-class Database:
+
+class Database(object):
 
     def __init__(self, db_host=None, db_port=None):
-        self.db_host = db_host or '10.0.0.50'
-        self.db_port = db_port or 28015
+        self.db_host = db_host or RDB_HOST
+        self.db_port = db_port or RDB_PORT
 
 
         # self.tables = {
@@ -52,24 +68,9 @@ class Database:
         #     }
         # }
 
-        self.tables = {
-            DB_AWS: [
-                TABLE_STATISTICS,
-                TABLE_PLANT,
-                TABLE_OWN_PLANT
-            ]
-        }
-
         self.connection = r.connect(host=self.db_host, port=self.db_port)
-        try:
-            for database, tables in self.tables.iteritems():
-                r.db_create(database).run(self.connection)
-                for t in tables:
-                    r.db(database).table_create(t).run(self.connection)
-        except RqlRuntimeError:
-            print 'Database already exist'
-        finally:
-            self.connection.close()
+        self.create_db_structure(self.connection)
+        self.connection.close()
 
     def __setup_connection(self):
         self.connection = r.connect(host=self.db_host, port=self.db_port, db=DB_AWS)
@@ -78,10 +79,40 @@ class Database:
     def __tear_down_connection(self):
         self.connection.close()
 
+    @staticmethod
+    def create_db_structure(connection, database=DB_AWS):
+        # Create the database if it doesn't exist
+        if database not in r.db_list().run(connection):
+            r.db_create(database).run(connection)
+
+        # Add the tables if they doesn't exist
+        existing_tables = r.db(database).table_list().run(connection)
+
+        if TABLE_STATISTICS not in existing_tables:
+            r.db(database).table_create(TABLE_STATISTICS).run(connection)
+
+        if TABLE_PLANT not in existing_tables:
+            r.db(database).table_create(TABLE_PLANT).run(connection)
+
+        if TABLE_OWN_PLANT not in existing_tables:
+            r.db(database).table_create(TABLE_OWN_PLANT).run(connection)
+
+    @staticmethod
+    def delete_db_data(connection, database=DB_AWS):
+        """
+        Delete all data from the different tables
+        :param connection:
+        :param database:
+        :return:
+        """
+        r.db(database).table(TABLE_STATISTICS).delete().run(connection)
+        r.db(database).table(TABLE_PLANT).delete().run(connection)
+        r.db(database).table(TABLE_OWN_PLANT).delete().run(connection)
+
     # def add_statistic(self, moisture, temperature, plant_id):
     def add_statistic(self, **kwargs):
         self.__setup_connection()
-        r.db(DB_AWS).table(TABLE_STATISTICS).insert({
+        r.table(TABLE_STATISTICS).insert({
             TABLE_STATISTICS_CREATED: time(),
             TABLE_STATISTICS_RAW_MOISTURE: kwargs.get('moisture', 0),
             TABLE_STATISTICS_RAW_TEMPERATURE: kwargs.get('temperature', 0)#,
@@ -93,7 +124,7 @@ class Database:
         # Name is required
         if kwargs.get('name') is not None:
             self.__setup_connection()
-            r.db(DB_AWS).table_create(TABLE_PLANT).insert({
+            r.table_create(TABLE_PLANT).insert({
                 TABLE_PLANT_CREATED: time(),
                 TABLE_PLANT_NAME: kwargs.get('name'),
                 TABLE_PLANT_MAX_TEMPERATURE: kwargs.get('max_temperature', 125),

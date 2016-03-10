@@ -2,15 +2,18 @@
 # coding=utf-8
 from flask import Flask
 
+from website.app_settings import ProductionConfig
 from website.backend import root
 from website.backend import own_plant
 
 
-def create_app():
+def create_app(config_object=ProductionConfig):
     """
+    :param config_object:
     :return: Flask
     """
     app = Flask(__name__, static_folder='./frontend/static', static_url_path='/static')
+    app.config.from_object(config_object)
 
     register_blueprints(app)
 

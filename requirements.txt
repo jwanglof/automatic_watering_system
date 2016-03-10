@@ -4,3 +4,6 @@ Wiring-x86==1.0.0
 rethinkdb==2.2.0.post5
 blinker==1.4
 twisted==15.5.0
+Flask==0.10.1
+wtforms==2.1
+WTForms-JSON==0.2.10
