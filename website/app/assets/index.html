@@ -7,18 +7,37 @@
 </head>
 <body>
 
+{% set active_page = active_page|default('index') -%}
+
+{% set navigation_links = [
+    (url_for('root.root'), 'root', 'Root'),
+    ('', 'divider', ''),
+    (url_for('own_plant.new_plant'), 'own_plant.new_plant', 'Add own plant'),
+    (url_for('own_plant.get_plants'), 'own_plant.get_plants', 'See all own plants'),
+    ('', 'divider', ''),
+    (url_for('plant.new_plant'), 'plant.new_plant', 'Add new plant'),
+    (url_for('plant.get_plants'), 'plant.get_plants', 'See all plants'),
+    ('', 'divider', ''),
+    (url_for('pump.new_pump'), 'pump.new_pump', 'Add new pump'),
+    (url_for('pump.get_pumps'), 'pump.get_pumps', 'See all pumps')
+] -%}
+
 <header>
     <ul>
-        <li><a href="{{ url_for('root.root') }}">Root</a></li>
-        <li class="divider"></li>
-        <li><a href="{{ url_for('own_plant.new_plant') }}">Add own plant</a></li>
-        <li><a href="{{ url_for('own_plant.get_plants') }}">See all own plants</a></li>
-        <li class="divider"></li>
-        <li><a href="{{ url_for('plant.new_plant') }}">Add new plant</a></li>
-        <li><a href="{{ url_for('plant.get_plants') }}">See all plants</a></li>
-        <li class="divider"></li>
-        <li><a href="{{ url_for('pump.new_pump') }}">Add new pump</a></li>
-        <li><a href="{{ url_for('pump.get_pumps') }}">See all pumps</a></li>
+        {% for href, id, caption in navigation_links -%}
+
+            {% if id == 'divider' %}
+
+                <li class="divider"></li>
+
+            {% else %}
+
+                <li class="{% if id == active_page -%}active{% endif %}">
+                    <a href="{{ href|e -}}">{{ caption|e }}</a>
+                </li>
+
+            {% endif %}
+        {% endfor %}
     </ul>
 </header>
 

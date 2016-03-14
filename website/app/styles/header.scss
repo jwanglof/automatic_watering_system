@@ -16,6 +16,11 @@ header li {
 
 header li.divider {
     margin-right: 5px;
+    margin-left: 5px;
     padding: 5px 0 ;
     background-color: black;
+}
+
+header li.active {
+    background-color: grey;
 }

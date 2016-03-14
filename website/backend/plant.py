@@ -74,7 +74,7 @@ def new_plant():
         else:
             abort(400, form.errors)
 
-    return render_template('plant/add_plant.html', form=form)
+    return render_template('plant/add_plant.html', form=form, active_page='plant.new_plant')
 
 
 @blueprint.route('/<string:delete_id>', methods=['DELETE'])

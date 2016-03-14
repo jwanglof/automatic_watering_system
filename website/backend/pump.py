@@ -49,7 +49,7 @@ def teardown_request(exception):
 def get_pumps():
     """Return all pumps in a list"""
     plants = list(r.table(DB.TABLE_PUMP).run(g.rdb_conn))
-    return render_template('own_plant/all_own_plants.html', plants=json.dumps(plants))
+    return render_template('pump/all_pumps.html', plants=json.dumps(plants))
 
 
 @blueprint.route('/<string:get_id>', methods=['GET'])

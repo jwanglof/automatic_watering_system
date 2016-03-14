@@ -66,7 +66,6 @@ def get_plant(get_id):
 @blueprint.route('/add', methods=['GET', 'POST'])
 def new_plant():
     """Create a new own plant"""
-    print 123
     existing_plants = r.table(DB.TABLE_PLANT)
 
     # Don't allow the user to see the form if there isn't any plants added
@@ -102,7 +101,7 @@ def new_plant():
         else:
             abort(400, form.errors)
 
-    return render_template('own_plant/add_own_plant.html', form=form)
+    return render_template('own_plant/add_own_plant.html', form=form, active_page='own_plant.new_plant')
 
 
 @blueprint.route('/<string:delete_id>', methods=['DELETE'])

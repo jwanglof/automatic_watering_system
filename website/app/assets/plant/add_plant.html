@@ -1,5 +1,7 @@
 {% extends "./index.html" %}
 
+{% set active_page = 'plant.new_plant' %}
+
 {% block body %}
 
     <form class="form" method="post" action="{{ url_for('plant.new_plant') }}">
