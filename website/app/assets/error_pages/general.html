@@ -1,0 +1,11 @@
+{% extends './index.html' %}
+
+{% block body %}
+
+    <h1>{{ status_code }}!</h1>
+
+    {% if error %}
+        <h3>{{ error }}</h3>
+    {% endif %}
+
+{% endblock %}

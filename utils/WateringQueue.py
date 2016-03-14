@@ -73,7 +73,9 @@ class WateringQueue:
             else:
                 self.add_valve_to_queue(valve)
         else:
-            raise ReferenceError
+            error = ReferenceError
+            error.message = 'valve needs to be of the type MagneticValve!'
+            raise error
 
     def close_valve_event(self, valve):
         """

@@ -1,0 +1,31 @@
+{% extends "./index.html" %}
+
+{% block body %}
+
+    <form class="form" method="post" action="{{ url_for('pump.new_pump') }}">
+        {{ form.hidden_tag() }}
+
+        {{ form.name.label }}
+        <span class="form__description">{{ form.name.description }}</span>
+        {{ form.name() }}
+
+        {{ form.pin.label }}
+        <span class="form__description">{{ form.pin.description }}</span>
+        {{ form.pin() }}
+
+        {{ form.pin_type.label }}
+        <span class="form__description">{{ form.pin_type.description }}</span>
+        {{ form.pin_type() }}
+
+        {{ form.location.label }}
+        <span class="form__description">{{ form.location.description }}</span>
+        {{ form.location() }}
+
+        {{ form.description.label }}
+        <span class="form__description">{{ form.description.description }}</span>
+        {{ form.description() }}
+
+        <input type="submit" value="Add pump">
+    </form>
+
+{% endblock %}

@@ -6,4 +6,5 @@ blinker==1.4
 twisted==15.5.0
 Flask==0.10.1
 wtforms==2.1
-WTForms-JSON==0.2.10
+wtforms_components==0.10.0
+flask-wtf==0.12

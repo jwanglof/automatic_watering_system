@@ -81,3 +81,9 @@ venv
 
 # RethinkDBs data folder
 rethinkdb_data
+
+node_modules
+
+# Ignore the frontend-build
+public
+.sass-cache

@@ -10,11 +10,13 @@ class ProductionConfig(Config):
     ENV = 'production'
     DEBUG = False
     TESTING = False
+    SECRET_KEY = 'production'
 
 
 class DevelopmentConfig(Config):
     ENV = 'development'
     DEBUG = True
+    SECRET_KEY = ENV
 
 
 class TestingConfig(Config):
@@ -24,3 +26,5 @@ class TestingConfig(Config):
     DB_NAME = None
     ENV = 'testing'
     TESTING = True
+    SECRET_KEY = ENV
+    WTF_CSRF_ENABLED = False

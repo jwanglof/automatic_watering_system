@@ -9,6 +9,7 @@ from threading import Timer
 from blinker import signal
 
 from utils import blinker_signals
+from utils.pins import digitalPins
 from utils.print_debug import print_debug
 
 
@@ -24,6 +25,7 @@ class MagneticValve:
     opened = 'OPENED'
     closed = 'CLOSED'
 
+    # def __init__(self, gpio, uuid, pin, name, database_entry, debug=False):
     def __init__(self, gpio, uuid, pin, name, debug=False):
         """
         Constructor
@@ -40,6 +42,9 @@ class MagneticValve:
         :type name: str
         :param name:
 
+        :type database_entry: dict
+        :param database_entry:
+
         :type debug: bool
         :param debug:
         """
@@ -49,6 +54,7 @@ class MagneticValve:
         self.gpio = gpio
         self.__uuid = uuid
         self.pin = pin
+        self.digital_pin = digitalPins.get(pin)
         self.__name = name
         self.debug = debug
 
@@ -73,7 +79,7 @@ class MagneticValve:
         print_debug(self.debug, currentframe().f_code.co_name, 'Opening %s' % self.__name)
 
         self.__status = self.opened
-        self.gpio.digitalWrite(self.pin, self.gpio.HIGH)
+        self.gpio.digitalWrite(self.digital_pin, self.gpio.HIGH)
 
         timer_time = 0.5
         if self.debug:
@@ -89,7 +95,7 @@ class MagneticValve:
         # Send the close-valve-event
         self.close_valve_signal.send(self)
         self.__status = self.closed
-        self.gpio.digitalWrite(self.pin, self.gpio.LOW)
+        self.gpio.digitalWrite(self.digital_pin, self.gpio.LOW)
 
     @property
     def get_name(self):

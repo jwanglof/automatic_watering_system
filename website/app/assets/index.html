@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AWS (Automatic Watering System)</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='app.css') }}">
+</head>
+<body>
+
+<header>
+    <ul>
+        <li><a href="{{ url_for('root.root') }}">Root</a></li>
+        <li class="divider"></li>
+        <li><a href="{{ url_for('own_plant.new_plant') }}">Add own plant</a></li>
+        <li><a href="{{ url_for('own_plant.get_plants') }}">See all own plants</a></li>
+        <li class="divider"></li>
+        <li><a href="{{ url_for('plant.new_plant') }}">Add new plant</a></li>
+        <li><a href="{{ url_for('plant.get_plants') }}">See all plants</a></li>
+        <li class="divider"></li>
+        <li><a href="{{ url_for('pump.new_pump') }}">Add new pump</a></li>
+        <li><a href="{{ url_for('pump.get_pumps') }}">See all pumps</a></li>
+    </ul>
+</header>
+
+{% block body %}{% endblock %}
+
+<script src="{{ url_for('static', filename='libraries.js') }}"></script>
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+<script>require('all').init();</script>
+
+</body>
+</html>

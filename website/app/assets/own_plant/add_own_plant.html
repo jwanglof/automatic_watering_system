@@ -1,0 +1,43 @@
+{% extends "./index.html" %}
+
+{% block body %}
+
+    {% if form %}
+        <form class="form" method="post" action="{{ url_for('own_plant.new_plant') }}">
+            {{ form.hidden_tag() }}
+
+            {{ form.plant_id.label }}
+            <span class="form__description">{{ form.plant_id.description }}</span>
+            {{ form.plant_id() }}
+
+            {{ form.pump_id.label }}
+            <span class="form__description">{{ form.pump_id.description }}</span>
+            {{ form.pump_id() }}
+
+            {{ form.name.label }}
+            <span class="form__description">{{ form.name.description }}</span>
+            {{ form.name() }}
+
+            {{ form.description.label }}
+            <span class="form__description">{{ form.description.description }}</span>
+            {{ form.description() }}
+
+            {{ form.magnetic_valve_pin.label }}
+            <span class="form__description">{{ form.magnetic_valve_pin.description|safe }}</span>
+            {{ form.magnetic_valve_pin() }}
+
+            {{ form.moisture_sensor_pin.label }}
+            <span class="form__description">{{ form.moisture_sensor_pin.description|safe }}</span>
+            {{ form.moisture_sensor_pin() }}
+
+            {{ form.temperature_sensor_pin.label }}
+            <span class="form__description">{{ form.temperature_sensor_pin.description|safe }}</span>
+            {{ form.temperature_sensor_pin() }}
+
+            <input type="submit" value="Add own plant">
+        </form>
+    {% elif error %}
+        <h1>{{ error }}</h1>
+    {% endif %}
+
+{% endblock %}

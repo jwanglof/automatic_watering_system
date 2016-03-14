@@ -7,4 +7,5 @@ blueprint = Blueprint('root', __name__, url_prefix='/')
 
 @blueprint.route('/')
 def root():
-    return render_template('index.html')
+    # form = OwnPlantForm.OwnPlantForm()
+    return render_template('root.html')

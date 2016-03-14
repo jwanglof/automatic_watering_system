@@ -5,6 +5,8 @@ from time import time
 import rethinkdb as r
 from rethinkdb.errors import RqlRuntimeError, ReqlUserError
 
+from website.forms.PlantForm import PlantForm
+
 try:
     RDB_HOST = environ["RDB_HOST"]
     RDB_PORT = environ["RDB_PORT"]
@@ -31,19 +33,25 @@ TABLE_PLANT_MIN_MOISTURE = 'min_moisture'
 
 TABLE_OWN_PLANT = 'own_plant'
 TABLE_OWN_PLANT_CREATED = 'created'
+TABLE_OWN_PLANT_NAME = 'name'
 TABLE_OWN_PLANT_PLANT_ID = 'plant_id'
+TABLE_OWN_PLANT_PUMP_ID = 'pump_id'
 TABLE_OWN_PLANT_DESCRIPTION = 'description'
+TABLE_OWN_PLANT_TEMPERATURE_PIN = 'temperature_sensor_pin'
+TABLE_OWN_PLANT_MOISTURE_PIN = 'moisture_sensor_pin'
+TABLE_OWN_PLANT_MAGNETIC_VALVE_PIN = 'magnetic_valve_pin'
 
-# DB_TABLES = {
-#     DB_AWS: [
-#         TABLE_STATISTICS,
-#         TABLE_PLANT,
-#         TABLE_OWN_PLANT
-#     ]
-# }
+TABLE_PUMP = 'pump'
+TABLE_PUMP_CREATED = 'created'
+TABLE_PUMP_NAME = 'name'
+TABLE_PUMP_LOCATION = 'location'
+TABLE_PUMP_DESCRIPTION = 'description'
+TABLE_PUMP_PIN = 'pin'
+TABLE_PUMP_PIN_TYPE = 'pin_type'  # Analog, digital or PWM
 
 
 class Database(object):
+    connection = None
 
     def __init__(self, db_host=None, db_port=None):
         self.db_host = db_host or RDB_HOST
@@ -68,19 +76,24 @@ class Database(object):
         #     }
         # }
 
-        self.connection = r.connect(host=self.db_host, port=self.db_port)
-        self.create_db_structure(self.connection)
-        self.connection.close()
+        # self.connection = r.connect(host=self.db_host, port=self.db_port)
+        # self.create_db_structure(self.connection)
+        # self.connection.close()
 
     def __setup_connection(self):
         self.connection = r.connect(host=self.db_host, port=self.db_port, db=DB_AWS)
         return self.connection
 
     def __tear_down_connection(self):
-        self.connection.close()
+        try:
+            self.connection.close()
+        except Exception:
+            pass
 
-    @staticmethod
-    def create_db_structure(connection, database=DB_AWS):
+    def create_db_structure(self, connection=connection, database=DB_AWS):
+        if not connection:
+            connection = self.__setup_connection()
+
         # Create the database if it doesn't exist
         if database not in r.db_list().run(connection):
             r.db_create(database).run(connection)
@@ -97,41 +110,82 @@ class Database(object):
         if TABLE_OWN_PLANT not in existing_tables:
             r.db(database).table_create(TABLE_OWN_PLANT).run(connection)
 
-    @staticmethod
-    def delete_db_data(connection, database=DB_AWS):
+        if TABLE_PUMP not in existing_tables:
+            r.db(database).table_create(TABLE_PUMP).run(connection)
+
+        self.__tear_down_connection()
+
+    def delete_db_data(self, connection, database=DB_AWS):
         """
         Delete all data from the different tables
         :param connection:
         :param database:
         :return:
         """
+        if not connection:
+            connection = self.__setup_connection()
+
         r.db(database).table(TABLE_STATISTICS).delete().run(connection)
         r.db(database).table(TABLE_PLANT).delete().run(connection)
         r.db(database).table(TABLE_OWN_PLANT).delete().run(connection)
+        r.db(database).table(TABLE_PUMP).delete().run(connection)
 
-    # def add_statistic(self, moisture, temperature, plant_id):
-    def add_statistic(self, **kwargs):
-        self.__setup_connection()
-        r.table(TABLE_STATISTICS).insert({
-            TABLE_STATISTICS_CREATED: time(),
-            TABLE_STATISTICS_RAW_MOISTURE: kwargs.get('moisture', 0),
-            TABLE_STATISTICS_RAW_TEMPERATURE: kwargs.get('temperature', 0)#,
-            # TABLE_STATISTICS_OWN_PLANT_ID: kwargs.get('own_plant_id', )
-        }).run(self.connection)
         self.__tear_down_connection()
 
-    def add_plant(self, **kwargs):
-        # Name is required
-        if kwargs.get('name') is not None:
-            self.__setup_connection()
-            r.table_create(TABLE_PLANT).insert({
-                TABLE_PLANT_CREATED: time(),
-                TABLE_PLANT_NAME: kwargs.get('name'),
-                TABLE_PLANT_MAX_TEMPERATURE: kwargs.get('max_temperature', 125),
-                TABLE_PLANT_MIN_TEMPERATURE: kwargs.get('min_temperature', -40),
-                TABLE_PLANT_MAX_MOISTURE: kwargs.get('max_moisture', 1),
-                TABLE_PLANT_MIN_MOISTURE: kwargs.get('min_moisture', 0)
-            })
-            self.__tear_down_connection()
-        else:
-            raise ReqlUserError
+    def get_all_own_plants(self):
+        connection = self.__setup_connection()
+        return r.table(TABLE_OWN_PLANT).run(connection)
+
+    def get_own_plant_from_id(self, uuid):
+        if not uuid:
+            raise IndexError
+
+        self.__setup_connection()
+        a = r.db(DB_AWS).table(TABLE_OWN_PLANT).get(uuid).run(self.connection)
+        self.__tear_down_connection()
+        return a
+
+    def get_plant_from_id(self, uuid):
+        if not uuid:
+            raise IndexError
+
+        self.__setup_connection()
+        a = r.db(DB_AWS).table(TABLE_PLANT).get(uuid).run(self.connection)
+        self.__tear_down_connection()
+        return a
+
+    def get_pump_from_id(self, uuid):
+        if not uuid:
+            raise IndexError
+
+        self.__setup_connection()
+        a = r.db(DB_AWS).table(TABLE_PUMP).get(uuid).run(self.connection)
+        self.__tear_down_connection()
+        return a
+
+    # # def add_statistic(self, moisture, temperature, plant_id):
+    # def add_statistic(self, **kwargs):
+    #     self.__setup_connection()
+    #     r.table(TABLE_STATISTICS).insert({
+    #         TABLE_STATISTICS_CREATED: time(),
+    #         TABLE_STATISTICS_RAW_MOISTURE: kwargs.get('moisture', 0),
+    #         TABLE_STATISTICS_RAW_TEMPERATURE: kwargs.get('temperature', 0)#,
+    #         # TABLE_STATISTICS_OWN_PLANT_ID: kwargs.get('own_plant_id', )
+    #     }).run(self.connection)
+    #     self.__tear_down_connection()
+    #
+    # def add_plant(self, **kwargs):
+    #     # Name is required
+    #     if kwargs.get('name') is not None:
+    #         self.__setup_connection()
+    #         r.table_create(TABLE_PLANT).insert({
+    #             TABLE_PLANT_CREATED: time(),
+    #             TABLE_PLANT_NAME: kwargs.get('name'),
+    #             TABLE_PLANT_MAX_TEMPERATURE: kwargs.get('max_temperature', 125),
+    #             TABLE_PLANT_MIN_TEMPERATURE: kwargs.get('min_temperature', -40),
+    #             TABLE_PLANT_MAX_MOISTURE: kwargs.get('max_moisture', 1),
+    #             TABLE_PLANT_MIN_MOISTURE: kwargs.get('min_moisture', 0)
+    #         })
+    #         self.__tear_down_connection()
+    #     else:
+    #         raise ReqlUserError

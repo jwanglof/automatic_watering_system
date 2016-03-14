@@ -2,14 +2,14 @@
 # coding=utf-8
 import json
 
-from flask import Blueprint, abort, g, request, jsonify
 import rethinkdb as r
-from rethinkdb.errors import RqlRuntimeError, RqlDriverError
+from flask import Blueprint, abort, g, render_template, redirect, url_for
+from rethinkdb.errors import RqlDriverError
 
 import utils.Database as DB
-
-from form_validation.OwnPlantValidation import OwnPlantValidation
-
+from AutomaticWateringSystem import AutomaticWateringSystem
+from website.AWSError import AWSError
+from website.forms.OwnPlantForm import OwnPlantForm
 
 blueprint = Blueprint('own_plant', __name__, url_prefix='/own_plant')
 
@@ -48,15 +48,71 @@ def teardown_request(exception):
 
 @blueprint.route('/', methods=['GET'])
 def get_plants():
-    selection = list(r.table(DB.TABLE_OWN_PLANT).run(g.rdb_conn))
+    """Return all own plants in a list"""
+    plants = list(r.table(DB.TABLE_OWN_PLANT).run(g.rdb_conn))
+    return render_template('own_plant/all_own_plants.html', plants=json.dumps(plants))
+
+
+@blueprint.route('/<string:get_id>', methods=['GET'])
+def get_plant(get_id):
+    """Get a specific own plant
+    :type get_id: str
+    :param get_id:
+    """
+    selection = r.table(DB.TABLE_OWN_PLANT).get(get_id).run(g.rdb_conn)
     return json.dumps(selection)
 
 
-@blueprint.route('/', methods=['POST'])
+@blueprint.route('/add', methods=['GET', 'POST'])
 def new_plant():
-    form = OwnPlantValidation.from_json(request.get_json())
-    if form.validate():
-        inserted = r.table(DB.TABLE_OWN_PLANT).insert(request.get_json()).run(g.rdb_conn)
-        return jsonify(id=inserted['generated_keys'][0])
+    """Create a new own plant"""
+    print 123
+    existing_plants = r.table(DB.TABLE_PLANT)
+
+    # Don't allow the user to see the form if there isn't any plants added
+    if existing_plants.count().run(g.rdb_conn) is 0:
+        raise AWSError('You must add a plant before you can add anything else!', status_code=503)
+
+    existing_pumps = r.table(DB.TABLE_PUMP)
+
+    if existing_pumps.count().run(g.rdb_conn) is 0:
+        raise AWSError('You must add a pump before you can add anything else!', status_code=503)
+
+    form = OwnPlantForm()
+    # Populate the plant-drop down
+    form.plant_id.choices = [(p['id'], p['name'].capitalize()) for p in existing_plants.run(g.rdb_conn)]
+    form.pump_id.choices = [(p['id'], p['name'].capitalize()) for p in existing_pumps.run(g.rdb_conn)]
+
+    if form.is_submitted():
+        if form.validate():
+            inserted = r.table(DB.TABLE_OWN_PLANT).insert(form.data).run(g.rdb_conn)
+            uuid = inserted['generated_keys'][0]
+
+            # Add the newly added plant so we can execute reads on it!
+            AutomaticWateringSystem(uuid=uuid,
+                                    name=form.data['name'],
+                                    temperature_pin=form.data.get(form.temperature_sensor_pin.id),
+                                    magnetic_valve_pin=form.data.get(form.magnetic_valve_pin.id),
+                                    moisture_pin=form.data.get(form.moisture_sensor_pin.id),
+                                    debug=True,
+                                    gpio_debug=False)
+
+            # return jsonify(id=inserted['generated_keys'][0])
+            return redirect(url_for('own_plant.get_plants'))
+        else:
+            abort(400, form.errors)
+
+    return render_template('own_plant/add_own_plant.html', form=form)
+
+
+@blueprint.route('/<string:delete_id>', methods=['DELETE'])
+def delete_plant(delete_id):
+    """Delete a plant
+    :type delete_id: str
+    :param delete_id:
+    """
+    deletion = r.table(DB.TABLE_OWN_PLANT).get(delete_id).delete().run(g.rdb_conn)
+    if deletion.get('deleted') is 1:
+        return delete_id
     else:
-        abort(400, form.errors)
+        abort(400, 'Invalid ID!')

@@ -1,0 +1,21 @@
+header {
+    display: block;
+    margin-bottom: 10px;
+    border-bottom: 2px solid black;
+}
+
+header ul {
+    padding: 0;
+}
+
+header li {
+    display: inline;
+    padding: 5px;
+    border: 1px solid black;
+}
+
+header li.divider {
+    margin-right: 5px;
+    padding: 5px 0 ;
+    background-color: black;
+}

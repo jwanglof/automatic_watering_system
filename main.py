@@ -2,9 +2,14 @@
 # coding=utf-8
 import time
 
+from wiringx86 import GPIOGalileoGen2 as GPIO
+from utils.pins import analogPins
+
 from AutomaticWateringSystem import AutomaticWateringSystem
-from utils.Database import Database
+from utils import Database
 from utils.WateringQueue import WateringQueue
+
+from website.app_settings import DevelopmentConfig
 
 from website import app
 
@@ -13,8 +18,10 @@ from website import app
 # ?? Borde implementera någon kö som har alla sensorer i sig som kollar varje minut (?).
 #    Ska klasserna pusha in sig själva varje minut till en kö som väntar på att en klass blir klar, och sen kör nästa?
 
+# pin = analogPins.get(1)
 # gpio = GPIO(debug=True)
-#
+# gpio.pinMode(pin, gpio.ANALOG_INPUT)
+
 # buzzer_pin = digitalPins.get(8)
 # gpio.pinMode(buzzer_pin, gpio.OUTPUT)
 #
@@ -28,9 +35,22 @@ from website import app
 ValveQueue = WateringQueue(True)
 
 if __name__ == '__main__':
-    database = Database()
-    app = app.create_app()
-    app.run(debug=True)
+    database = Database.Database()
+    database.create_db_structure()
+
+    # Start the existing plants in the database
+    for p in database.get_all_own_plants():
+        print p
+        AutomaticWateringSystem(uuid=p['id'],
+                                name=p[Database.TABLE_OWN_PLANT_NAME],
+                                temperature_pin=p[Database.TABLE_OWN_PLANT_TEMPERATURE_PIN],
+                                magnetic_valve_pin=p[Database.TABLE_OWN_PLANT_MAGNETIC_VALVE_PIN],
+                                moisture_pin=p[Database.TABLE_OWN_PLANT_MOISTURE_PIN],
+                                gpio_debug=False,
+                                debug=True)
+
+    app = app.create_app(DevelopmentConfig)
+    app.run(host='0.0.0.0')
 
     # # # NOTE: There will exist one class PER temperature sensor
     # # temperature_pin = 0
@@ -48,9 +68,15 @@ if __name__ == '__main__':
     # AWS = AutomaticWateringSystem('LED', temperature_pin=0, magnetic_valve_pin=6, debug=True)
     # AWS2 = AutomaticWateringSystem('BUZZER', temperature_pin=0, magnetic_valve_pin=8, debug=True)
     #
-    # try:
-    #     while True:
-    #         print 'LOOOOP'
+    """
+    try:
+        while True:
+
+            print 'LOOOOP'
+
+            value = gpio.analogRead(pin)
+
+            print value
     #         AWS.MagneticValve.send_open_valve_signal()
     #         AWS2.MagneticValve.send_open_valve_signal()
     #         # temp = GetTemperature.get_celsius()
@@ -86,10 +112,10 @@ if __name__ == '__main__':
     #         # except IndexError as e:
     #         #     print e
     #
-    #         time.sleep(2)
-    # except KeyboardInterrupt:
-    #     # GetTemperature.gpio.cleanup()
-    #     print 'CLEEEEEANUP'
+            time.sleep(1)
+    except KeyboardInterrupt:
+        # GetTemperature.gpio.cleanup()
+        print 'CLEEEEEANUP'"""
 
 
 # # pin = 13
