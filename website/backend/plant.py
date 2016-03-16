@@ -67,6 +67,7 @@ def new_plant():
     """Create a new own plant"""
     form = PlantForm()
     if form.is_submitted():
+        print form.data
         if form.validate():
             inserted = r.table(DB.TABLE_PLANT).insert(form.data).run(g.rdb_conn)
             # return jsonify(id=inserted['generated_keys'][0])

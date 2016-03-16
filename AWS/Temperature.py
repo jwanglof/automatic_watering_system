@@ -10,13 +10,13 @@ from utils.print_debug import print_debug
 
 # TODO: Setter for celsius threshold if the user wants to change it
 
-# class Temperature(AutomaticWateringSystem):
 class Temperature:
     """
     Temperature-class that helps to get some human-readable data from a temperature sensor
     One instance represents one sensor
     Info about the sensor: http://www.seeedstudio.com/wiki/Grove_-_Temperature_Sensor
     """
+
     def __init__(self, gpio, uuid, pin, name, celsius_threshold, debug=False):
         """
         Constructor
@@ -39,7 +39,6 @@ class Temperature:
         :type debug: bool
         :param debug:
         """
-        # AutomaticWateringSystem.__init__(self, debug)
         print_debug(debug, currentframe().f_code.co_name, 'Init temperature for: %s' % name)
         all_params_str = u'UUID: {uuid}. Pin: {pin}. Name: {name}. Celsius threshold: {c_threshold}'.format(
             uuid=uuid,
@@ -98,6 +97,13 @@ class Temperature:
                 .format(analog_pin=self.pin)
         print_debug(self.debug, currentframe().f_code.co_name, 'Raw read: ' + str(raw))
         return raw
+
+    @staticmethod
+    def cleanup():
+        """
+        Don't really need any clean-up since the pin is analog
+        """
+        pass
 
     def __get_resistance(self):
         # TODO If we get None then the pins aren't set up correctly, should throw an error..?

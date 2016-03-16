@@ -19,13 +19,14 @@ class PumpForm(Form):
                        validators=[
                            validators.DataRequired('You must apply which pin the pump is attached to!')
                        ])
-    pin_type = SelectField(label='Pin type *',
-                           description='Specify which pin-type the pump is hooked up to',
-                           choices=[('analog', 'Analog'), ('digital', 'Digital'), ('pwm', 'PWM')],
-                           validators=[
-                               validators.DataRequired('You must specify what pin-type the pump is attached to '
-                                                       '(analog, digital, pwm)')
-                           ])
+    # # TODO REmove pin type. It must be digital!
+    # pin_type = SelectField(label='Pin type *',
+    #                        description='Specify which pin-type the pump is hooked up to',
+    #                        choices=[('analog', 'Analog'), ('digital', 'Digital'), ('pwm', 'PWM')],
+    #                        validators=[
+    #                            validators.DataRequired('You must specify what pin-type the pump is attached to '
+    #                                                    '(analog, digital, pwm)')
+    #                        ])
     location = StringField(label='Location',
                            description='Specify the location of the pump so it\'s easier to find it',
                            validators=[

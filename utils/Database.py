@@ -134,7 +134,15 @@ class Database(object):
 
     def get_all_own_plants(self):
         connection = self.__setup_connection()
-        return r.table(TABLE_OWN_PLANT).run(connection)
+        res = r.table(TABLE_OWN_PLANT).run(connection)
+        self.__tear_down_connection()
+        return res
+
+    def get_all_pumps(self):
+        connection = self.__setup_connection()
+        res = r.table(TABLE_PUMP).run(connection)
+        self.__tear_down_connection()
+        return res
 
     def get_own_plant_from_id(self, uuid):
         if not uuid:

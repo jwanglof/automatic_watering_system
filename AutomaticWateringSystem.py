@@ -44,7 +44,7 @@ class AutomaticWateringSystem(object):
         :type gpio_debug: bool
         :param gpio_debug: Specify if the debug should be on/off for the GPIO library
         """
-        print_debug(debug, currentframe().f_code.co_name, 'Init %s' % name)
+        print_debug(debug, currentframe().f_code.co_name, u'Init %s' % name, __name__)
         all_params_str = u'UUID: {uuid}. Name: {name}. TP: {tp}. MVP: {mvp}. MP: {mp}'.format(
             uuid=uuid,
             name=name,
@@ -52,7 +52,7 @@ class AutomaticWateringSystem(object):
             mvp=magnetic_valve_pin,
             mp=moisture_pin
         )
-        print_debug(debug, currentframe().f_code.co_name, all_params_str)
+        print_debug(debug, currentframe().f_code.co_name, all_params_str, __name__)
 
         self.__name = name
         self.__temperature_pin = temperature_pin
@@ -64,18 +64,10 @@ class AutomaticWateringSystem(object):
         # self.__uuid = str(uuid4())  # type: uuid4
         self.__uuid = uuid
 
-        print 1111, uuid
-
         self.DB = Database()
         self.db_own_plant = self.DB.get_own_plant_from_id(self.get_uuid)
         self.db_plant = self.DB.get_plant_from_id(self.db_own_plant.get('plant_id'))
         self.db_pump = self.DB.get_pump_from_id(self.db_own_plant.get('pump_id'))
-
-        # print self.db_own_plant
-        # print 1
-        # print self.db_plant
-        # print 2
-        # print self.db_pump
 
         # Get a new instance of the GPIO
         self.gpio = GPIO(debug=gpio_debug)  # type: GPIO
@@ -84,9 +76,9 @@ class AutomaticWateringSystem(object):
         self.MagneticValve = None
         if magnetic_valve_pin is not None:
             print_debug(debug, currentframe().f_code.co_name,
-                        'Initializing magnetic valve at pin %i' % magnetic_valve_pin)
+                        'Initializing magnetic valve at pin %i' % magnetic_valve_pin, __name__)
             self.MagneticValve = MagneticValve(self.gpio, self.__uuid, magnetic_valve_pin,
-                                               name, debug)  # type: MagneticValve
+                                               name, self.db_own_plant.get('pump_id'), debug)  # type: MagneticValve
         else:
             error = EnvironmentError
             error.message = 'A magnetic valve is needed!'
@@ -95,16 +87,17 @@ class AutomaticWateringSystem(object):
         self.TemperatureSensor = None
         if temperature_pin is not None:
             print_debug(debug, currentframe().f_code.co_name,
-                        'Initializing temperature sensor at pin %i' % temperature_pin)
+                        'Initializing temperature sensor at pin %i' % temperature_pin, __name__)
             self.TemperatureSensor = Temperature(self.gpio, self.__uuid, temperature_pin,
                                                  name, 30, debug)  # type: Temperature
 
         self.MoistureSensor = None
         if moisture_pin is not None:
             print_debug(debug, currentframe().f_code.co_name,
-                        'Initializing moisture sensor at pin %i' % magnetic_valve_pin)
+                        'Initializing moisture sensor at pin %i' % moisture_pin, __name__)
             self.MoistureSensor = Moisture(self.gpio, self.__uuid, moisture_pin, name,
-                                           self.db_plant.get('moisture'), debug)  # type: Moisture
+                                           self.db_plant.get('min_moisture'), self.db_plant.get('max_moisture'),
+                                           debug)  # type: Moisture
 
         self.__run_count = 0
 
@@ -117,7 +110,8 @@ class AutomaticWateringSystem(object):
         :return:
         """
         self.__run_count += 1
-        print 'RUN!!!!', self.get_name, self.__run_count
+        print_debug(self.debug, currentframe().f_code.co_name, u'New timer running! %s' % self.get_name, __name__)
+        print_debug(self.debug, currentframe().f_code.co_name, u'Run count: %s' % self.__run_count, __name__)
         temp_exceed = False
         moist_exceed = False
 
@@ -127,8 +121,8 @@ class AutomaticWateringSystem(object):
         if self.MoistureSensor:
             moist_exceed = self.MoistureSensor.has_deceeded_threshold()
 
-        print 'Temp:', temp_exceed
-        print 'Moist:', moist_exceed
+        print_debug(self.debug, currentframe().f_code.co_name, u'Temp exceed: %s' % str(temp_exceed), __name__)
+        print_debug(self.debug, currentframe().f_code.co_name, u'Moist exceed: %s' % str(moist_exceed), __name__)
 
         if moist_exceed:
             # Try to open the valve
@@ -138,11 +132,22 @@ class AutomaticWateringSystem(object):
         pass
 
     def __start_new_timer(self, time=60):
-        print 'New timer! %s ' % self.get_name
+        print_debug(self.debug, currentframe().f_code.co_name, u'New timer starting! %s' % self.get_name, __name__)
         self.timer = Timer(time, self.run)
         self.timer.start()
 
     def cleanup(self):
+        """
+        Cleanup all the things!
+        """
+        if self.TemperatureSensor:
+            self.TemperatureSensor.cleanup()
+
+        if self.MoistureSensor:
+            self.MoistureSensor.cleanup()
+
+        self.MagneticValve.cleanup()
+
         self.gpio.cleanup()
 
     @property

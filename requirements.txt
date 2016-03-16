@@ -8,3 +8,4 @@ Flask==0.10.1
 wtforms==2.1
 wtforms_components==0.10.0
 flask-wtf==0.12
+pytz==2016.1

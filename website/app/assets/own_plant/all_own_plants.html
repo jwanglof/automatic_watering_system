@@ -6,4 +6,41 @@
 
     {{ plants }}
 
+    <hr />
+
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Created</th>
+            <th>Magnetic valve pin</th>
+            <th>Moisture sensor pin</th>
+            <th>Temperature sensor pin</th>
+            <th>Plant</th>
+            <th>Pump</th>
+        </tr>
+
+    {% for p in plants %}
+
+        {# Get the plant info #}
+        {% set plant = p['plant_id'] | get_plant_from_id %}
+        {% set pump = p['pump_id'] | get_pump_from_id %}
+        <tr>
+            <td>{{ p['name'] }}</td>
+            <td>{{ p['description'] }}</td>
+            <td>{{ p['created'] | datetimefilter }}</td>
+            <td>{{ p['magnetic_valve_pin'] }}</td>
+            <td>{{ p['moisture_sensor_pin'] }}</td>
+            <td>{{ p['temperature_sensor_pin'] }}</td>
+            {# TODO Add a plant-detail-view AND pump-detail-view!!!!!! #}
+            <td><a href="#">{{ plant['name'] }}</a></td>
+            <td><a href="#">{{ pump['name'] }}</a></td>
+            <td><a href="{{ url_for('own_plant.delete_plant', delete_id=p['id']) }}">Delete</a></td>
+            <td>Edit</td>
+        </tr>
+
+    {% endfor %}
+
+    </table>
+
 {% endblock %}

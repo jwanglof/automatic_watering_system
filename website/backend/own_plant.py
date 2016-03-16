@@ -50,7 +50,7 @@ def teardown_request(exception):
 def get_plants():
     """Return all own plants in a list"""
     plants = list(r.table(DB.TABLE_OWN_PLANT).run(g.rdb_conn))
-    return render_template('own_plant/all_own_plants.html', plants=json.dumps(plants))
+    return render_template('own_plant/all_own_plants.html', plants=plants)
 
 
 @blueprint.route('/<string:get_id>', methods=['GET'])
@@ -104,14 +104,15 @@ def new_plant():
     return render_template('own_plant/add_own_plant.html', form=form, active_page='own_plant.new_plant')
 
 
-@blueprint.route('/<string:delete_id>', methods=['DELETE'])
+@blueprint.route('/delete/<string:delete_id>', methods=['DELETE'])
 def delete_plant(delete_id):
     """Delete a plant
     :type delete_id: str
     :param delete_id:
     """
-    deletion = r.table(DB.TABLE_OWN_PLANT).get(delete_id).delete().run(g.rdb_conn)
-    if deletion.get('deleted') is 1:
-        return delete_id
-    else:
-        abort(400, 'Invalid ID!')
+    print delete_id
+    # deletion = r.table(DB.TABLE_OWN_PLANT).get(delete_id).delete().run(g.rdb_conn)
+    # if deletion.get('deleted') is 1:
+    #     return delete_id
+    # else:
+    #     abort(400, 'Invalid ID!')

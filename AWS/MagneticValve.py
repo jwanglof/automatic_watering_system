@@ -25,8 +25,7 @@ class MagneticValve:
     opened = 'OPENED'
     closed = 'CLOSED'
 
-    # def __init__(self, gpio, uuid, pin, name, database_entry, debug=False):
-    def __init__(self, gpio, uuid, pin, name, debug=False):
+    def __init__(self, gpio, uuid, pin, name, pump_id, open_time=0.5, debug=False):
         """
         Constructor
 
@@ -42,29 +41,32 @@ class MagneticValve:
         :type name: str
         :param name:
 
-        :type database_entry: dict
-        :param database_entry:
+        :type open_time: float
+        :param open_time: Specify how long the valve should be open
 
         :type debug: bool
         :param debug:
         """
-        print_debug(debug, currentframe().f_code.co_name, 'Init %s' % name)
-        # AutomaticWateringSystem.__init__(self, debug)
+        print_debug(debug, currentframe().f_code.co_name, 'Init %s' % name, __name__)
 
         self.gpio = gpio
         self.__uuid = uuid
         self.pin = pin
         self.digital_pin = digitalPins.get(pin)
         self.__name = name
+        self.__pump_id = pump_id
+        self.__open_time = open_time
         self.debug = debug
 
         # Set the relay to output
         self.gpio.pinMode(pin, self.gpio.OUTPUT)
 
+        # Set the initial status to closed
         self.__status = self.closed
 
         self.is_added_to_queue = False
 
+        # Events the valve can send
         self.open_valve_signal = signal(blinker_signals['open_valve'])
         self.close_valve_signal = signal(blinker_signals['close_valve'])
 
@@ -72,30 +74,36 @@ class MagneticValve:
         """
         Send the open-valve-event
         """
-        print_debug(self.debug, currentframe().f_code.co_name, 'Opening event %s' % self.__name)
+        print_debug(self.debug, currentframe().f_code.co_name, 'Opening event %s' % self.__name, __name__)
         self.open_valve_signal.send(self)
 
     def open_valve(self):
-        print_debug(self.debug, currentframe().f_code.co_name, 'Opening %s' % self.__name)
+        """
+        Open the valve and close it after the specified open_time
+        """
+        print_debug(self.debug, currentframe().f_code.co_name, 'Opening %s' % self.__name, __name__)
 
         self.__status = self.opened
         self.gpio.digitalWrite(self.digital_pin, self.gpio.HIGH)
 
-        timer_time = 0.5
-        if self.debug:
-            timer_time = 5
-        timer = Timer(timer_time, self.close_valve)
+        timer = Timer(self.__open_time, self.close_valve)
         timer.start()
-        # s = scheduler(time, sleep)
-        # s.enter(timer_time, 1, self.close_valve, '')
-        # s.run()
 
     def close_valve(self):
-        print_debug(self.debug, currentframe().f_code.co_name, 'Closing %s' % self.__name)
+        """
+        Closes the valve and will send the close-event for the WateringQueue
+        """
+        print_debug(self.debug, currentframe().f_code.co_name, 'Closing %s' % self.__name, __name__)
         # Send the close-valve-event
         self.close_valve_signal.send(self)
         self.__status = self.closed
         self.gpio.digitalWrite(self.digital_pin, self.gpio.LOW)
+
+    def cleanup(self):
+        """
+        Close the valve when cleaning up
+        """
+        self.close_valve()
 
     @property
     def get_name(self):
@@ -108,3 +116,7 @@ class MagneticValve:
     @property
     def get_status(self):
         return self.__status
+
+    @property
+    def get_pump_id(self):
+        return self.__pump_id

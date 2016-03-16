@@ -11,6 +11,14 @@
         <span class="form__description">{{ form.name.description }}</span>
         {{ form.name() }}
 
+        {{ form.min_moisture.label }}
+        <span class="form__description">{{ form.min_moisture.description }}</span>
+        {{ form.min_moisture() }}
+
+        {{ form.max_moisture.label }}
+        <span class="form__description">{{ form.max_moisture.description }}</span>
+        {{ form.max_moisture() }}
+
         {{ form.min_temperature.label }}
         <span class="form__description">{{ form.min_temperature.description }}</span>
         {{ form.min_temperature() }}
@@ -19,9 +27,9 @@
         <span class="form__description">{{ form.max_temperature.description }}</span>
         {{ form.max_temperature() }}
 
-        {{ form.moisture.label }}
-        <span class="form__description">{{ form.moisture.description }}</span>
-        {{ form.moisture() }}
+{#        {{ form.moisture.label }}#}
+{#        <span class="form__description">{{ form.moisture.description }}</span>#}
+{#        {{ form.moisture() }}#}
 
 {#        {{ form.min_moisture.label }}#}
 {#        <span class="form__description">{{ form.min_moisture.description }}</span>#}
