@@ -132,9 +132,9 @@ class Database(object):
 
         self.__tear_down_connection()
 
-    def get_all_own_plants(self):
+    def get_all_active_own_plants(self):
         connection = self.__setup_connection()
-        res = r.table(TABLE_OWN_PLANT).run(connection)
+        res = r.table(TABLE_OWN_PLANT).filter(r.row['active']).run(connection)
         self.__tear_down_connection()
         return res
 

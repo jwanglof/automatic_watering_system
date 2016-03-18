@@ -4,10 +4,6 @@
 
 {% block body %}
 
-    {{ plants }}
-
-    <hr />
-
     <table>
         <tr>
             <th>Name</th>
@@ -25,7 +21,7 @@
         {# Get the plant info #}
         {% set plant = p['plant_id'] | get_plant_from_id %}
         {% set pump = p['pump_id'] | get_pump_from_id %}
-        <tr>
+        <tr id="{{ p['id'] }}">
             <td>{{ p['name'] }}</td>
             <td>{{ p['description'] }}</td>
             <td>{{ p['created'] | datetimefilter }}</td>
@@ -35,7 +31,9 @@
             {# TODO Add a plant-detail-view AND pump-detail-view!!!!!! #}
             <td><a href="#">{{ plant['name'] }}</a></td>
             <td><a href="#">{{ pump['name'] }}</a></td>
-            <td><a href="{{ url_for('own_plant.delete_plant', delete_id=p['id']) }}">Delete</a></td>
+            <td><a data-own-plant-id="{{ p['id'] }}"
+                   data-delete-url="{{ url_for('own_plant.delete_plant', delete_id=p['id']) }}"
+                   class="remove_own_plant">Delete</a></td>
             <td>Edit</td>
         </tr>
 

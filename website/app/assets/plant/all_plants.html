@@ -4,6 +4,32 @@
 
 {% block body %}
 
-    {{ plants }}
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Created</th>
+            <th>Max moisture</th>
+            <th>Min moisture</th>
+            <th>Max temperature</th>
+            <th>Min temperature</th>
+        </tr>
 
+    {% for p in plants %}
+
+        <tr id="{{ p['id'] }}">
+            <td>{{ p['name'] }}</td>
+            <td>{{ p['created'] | datetimefilter }}</td>
+            <td>{{ p['max_moisture'] }}</td>
+            <td>{{ p['min_moisture'] }}</td>
+            <td>{{ p['max_temperature'] }}</td>
+            <td>{{ p['min_temperature'] }}</td>
+            <td><a data-plant-id="{{ p['id'] }}"
+                   data-delete-url="{{ url_for('plant.delete_plant', delete_id=p['id']) }}"
+                   class="remove_plant">Delete</a></td>
+            <td>Edit</td>
+        </tr>
+
+    {% endfor %}
+
+    </table>
 {% endblock %}

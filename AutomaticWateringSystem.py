@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 # coding=utf-8
+import uuid
 from inspect import currentframe
 from threading import Timer
 
@@ -18,6 +19,9 @@ class AutomaticWateringSystem(object):
     Main class for the Automatic Watering System (AWS)
     Will initiate the classes needed for a plant
     """
+
+    instances = {}
+
     def __init__(self, uuid, name, temperature_pin=None, magnetic_valve_pin=None, moisture_pin=None,
                  debug=False, gpio_debug=False):
         """
@@ -53,6 +57,9 @@ class AutomaticWateringSystem(object):
             mp=moisture_pin
         )
         print_debug(debug, currentframe().f_code.co_name, all_params_str, __name__)
+
+        # Add the new instance to the instances-list
+        AutomaticWateringSystem.instances[uuid] = self
 
         self.__name = name
         self.__temperature_pin = temperature_pin
@@ -100,17 +107,36 @@ class AutomaticWateringSystem(object):
                                            debug)  # type: Moisture
 
         self.__run_count = 0
+        self.active = True
 
         # Run a check directly when a new instance is created
         self.__start_new_timer(0)
 
-    def run(self):
+    def __start_new_timer(self, time=60):
+        """
+        Starts a new timer
+
+        :type time: int
+        :param time: How many seconds the timer should be set to
+        """
+        new_timer_uuid = str(uuid.uuid4())
+
+        print_debug(self.debug, currentframe().f_code.co_name,
+                    u'New timer starting with time {time}. AWS name: {name}. Timer UUID: {uuid}'
+                    .format(time=time, name=self.get_name, uuid=new_timer_uuid), __name__)
+
+        self.timer = Timer(time, self.__run, [new_timer_uuid])
+        self.timer.start()
+
+    def __run(self, timer_id):
         """
         Run the different checks, and open the valve if needed!
-        :return:
+        This function should not be called directly! Call __start_new_timer() instead!
         """
         self.__run_count += 1
-        print_debug(self.debug, currentframe().f_code.co_name, u'New timer running! %s' % self.get_name, __name__)
+        print_debug(self.debug, currentframe().f_code.co_name,
+                    u'Timer executed. AWS name: {name}. Timer UUID: {timer_id}'
+                    .format(name=self.get_name, timer_id=timer_id), __name__)
         print_debug(self.debug, currentframe().f_code.co_name, u'Run count: %s' % self.__run_count, __name__)
         temp_exceed = False
         moist_exceed = False
@@ -128,18 +154,19 @@ class AutomaticWateringSystem(object):
             # Try to open the valve
             self.MagneticValve.send_open_valve_signal()
 
-        self.__start_new_timer(10)
-        pass
+        print_debug(self.debug, currentframe().f_code.co_name,
+                    u'Timer done. AWS name: {name}. Timer UUID: {timer_id}'
+                    .format(name=self.get_name, timer_id=timer_id), __name__)
 
-    def __start_new_timer(self, time=60):
-        print_debug(self.debug, currentframe().f_code.co_name, u'New timer starting! %s' % self.get_name, __name__)
-        self.timer = Timer(time, self.run)
-        self.timer.start()
+        self.__start_new_timer(10)
 
     def cleanup(self):
         """
         Cleanup all the things!
         """
+        print_debug(self.debug, currentframe().f_code.co_name,
+                    u'Cleanup  ({name}, {uuid})!'.format(name=self.get_name, uuid=self.get_uuid), __name__)
+
         if self.TemperatureSensor:
             self.TemperatureSensor.cleanup()
 
@@ -147,6 +174,8 @@ class AutomaticWateringSystem(object):
             self.MoistureSensor.cleanup()
 
         self.MagneticValve.cleanup()
+
+        self.timer.cancel()
 
         self.gpio.cleanup()
 

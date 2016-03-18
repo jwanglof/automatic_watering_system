@@ -48,6 +48,14 @@ class MagneticValve:
         :param debug:
         """
         print_debug(debug, currentframe().f_code.co_name, 'Init %s' % name, __name__)
+        all_params_str = u'UUID: {uuid}. Pin: {pin}. Name: {name}. Pump ID: {pump_id}, Open time: {open_time}'.format(
+            uuid=uuid,
+            pin=pin,
+            name=name,
+            pump_id=pump_id,
+            open_time=open_time
+        )
+        print_debug(debug, currentframe().f_code.co_name, all_params_str)
 
         self.gpio = gpio
         self.__uuid = uuid
@@ -69,6 +77,7 @@ class MagneticValve:
         # Events the valve can send
         self.open_valve_signal = signal(blinker_signals['open_valve'])
         self.close_valve_signal = signal(blinker_signals['close_valve'])
+        self.valve_removed_signal = signal(blinker_signals['removed_valve'])
 
     def send_open_valve_signal(self):
         """
@@ -103,7 +112,7 @@ class MagneticValve:
         """
         Close the valve when cleaning up
         """
-        self.close_valve()
+        self.valve_removed_signal.send(self)
 
     @property
     def get_name(self):
@@ -120,3 +129,11 @@ class MagneticValve:
     @property
     def get_pump_id(self):
         return self.__pump_id
+
+    @property
+    def is_opened(self):
+        return self.__status == self.opened
+
+    @property
+    def is_closed(self):
+        return self.__status == self.closed

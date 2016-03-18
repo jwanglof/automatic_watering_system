@@ -36,6 +36,10 @@
             <span class="form__description">{{ form.temperature_sensor_pin.description|safe }}</span>
             {{ form.temperature_sensor_pin() }}
 
+            <span style="display: none;">
+                {{ form.active() }}
+            </span>
+
             <input type="submit" value="Add own plant">
         </form>
     {% elif error %}

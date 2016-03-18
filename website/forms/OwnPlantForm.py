@@ -3,12 +3,13 @@
 from time import time
 
 from flask.ext.wtf import Form
-from wtforms import validators, StringField, IntegerField, SelectField
+from wtforms import validators, StringField, IntegerField, SelectField, BooleanField
 
 
 class OwnPlantForm(Form):
     created = IntegerField(label='created', default=time())
-    plant_id = SelectField(label='Plant ID *', #coerce=int,
+    active = BooleanField(label='active', default=True)
+    plant_id = SelectField(label='Plant ID *',
                            description='Needed to know which threshold the plant have',
                            validators=[
                                validators.DataRequired('You must apply which plant this entry is for!')

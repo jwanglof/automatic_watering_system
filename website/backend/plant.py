@@ -8,6 +8,7 @@ from rethinkdb.errors import RqlDriverError
 
 import utils.Database as DB
 from website.forms.PlantForm import PlantForm
+from website.backend import own_plant
 
 
 blueprint = Blueprint('plant', __name__, url_prefix='/plant')
@@ -49,7 +50,7 @@ def teardown_request(exception):
 def get_plants():
     """Return all plants in a list"""
     plants = list(r.table(DB.TABLE_PLANT).run(g.rdb_conn))
-    return render_template('plant/all_plants.html', plants=json.dumps(plants))
+    return render_template('plant/all_plants.html', plants=plants)
 
 
 @blueprint.route('/<string:get_id>', methods=['GET'])
@@ -80,10 +81,15 @@ def new_plant():
 
 @blueprint.route('/<string:delete_id>', methods=['DELETE'])
 def delete_plant(delete_id):
-    """Delete a plant
+    """Delete a plant, and all its 'children'
     :type delete_id: str
     :param delete_id:
     """
+    # Remove all own plans that is based on this plant
+    own_plants = r.table(DB.TABLE_OWN_PLANT).filter(r.row['plant_id'] == delete_id).get_field('id').run(g.rdb_conn)
+    for own_plant_id in own_plants:
+        own_plant.delete_plant(own_plant_id)
+
     deletion = r.table(DB.TABLE_PLANT).get(delete_id).delete().run(g.rdb_conn)
     if deletion.get('deleted') is 1:
         return delete_id

@@ -9,20 +9,12 @@ from utils.WateringQueue import WateringQueue
 from website import app
 from website.app_settings import DevelopmentConfig
 
-# TODO
-# Om det inte rinner något vatten ska summern låta (måste ha en Grove som kollar vattenflödet då!)
-# ?? Borde implementera någon kö som har alla sensorer i sig som kollar varje minut (?).
-#    Ska klasserna pusha in sig själva varje minut till en kö som väntar på att en klass blir klar, och sen kör nästa?
+from utils.class_instances import own_plants, pumps
 
 # # pin = analogPins.get(1)
 # gpio = GPIO(debug=True)
 # # gpio.pinMode(pin, gpio.ANALOG_INPUT)
 #
-# # The pump will be on 4-evah!
-# pump_pin = digitalPins.get(8)
-# gpio.pinMode(pump_pin, gpio.OUTPUT)
-# gpio.digitalWrite(pump_pin, gpio.HIGH)
-
 # buzzer_pin = digitalPins.get(8)
 # gpio.pinMode(buzzer_pin, gpio.OUTPUT)
 #
@@ -33,10 +25,6 @@ from website.app_settings import DevelopmentConfig
 # gpio.pinMode(servo_pin, gpio.PWM)
 # gpio.setPWMPeriod(servo_pin, 1500)
 
-
-own_plants = []
-pumps = {}
-
 if __name__ == '__main__':
     database = Database.Database()
     database.create_db_structure()
@@ -45,33 +33,32 @@ if __name__ == '__main__':
     print 'Pumps:'
     for p in database.get_all_pumps():
         print p
-        pumps[p['id']] = Pump(pin=p['pin'],
+        pumps[p['id']] = Pump(uuid=p['id'],
+                              pin=p['pin'],
                               name=p['name'],
                               gpio_debug=False,
                               debug=True)
 
     print 'Plants:'
     # Start the existing plants in the database
-    for p in database.get_all_own_plants():
+    for p in database.get_all_active_own_plants():
         print p
-        own_plants.append(AutomaticWateringSystem(uuid=p['id'],
-                                                  name=p[Database.TABLE_OWN_PLANT_NAME],
-                                                  temperature_pin=p[Database.TABLE_OWN_PLANT_TEMPERATURE_PIN],
-                                                  magnetic_valve_pin=p[Database.TABLE_OWN_PLANT_MAGNETIC_VALVE_PIN],
-                                                  moisture_pin=p[Database.TABLE_OWN_PLANT_MOISTURE_PIN],
-                                                  gpio_debug=False,
-                                                  debug=True))
+        own_plants[p['id']] = AutomaticWateringSystem(uuid=p['id'],
+                                                      name=p[Database.TABLE_OWN_PLANT_NAME],
+                                                      temperature_pin=p[Database.TABLE_OWN_PLANT_TEMPERATURE_PIN],
+                                                      magnetic_valve_pin=p[Database.TABLE_OWN_PLANT_MAGNETIC_VALVE_PIN],
+                                                      moisture_pin=p[Database.TABLE_OWN_PLANT_MOISTURE_PIN],
+                                                      gpio_debug=False,
+                                                      debug=True)
 
-    ValveQueue = WateringQueue(True, pumps)
+    ValveQueue = WateringQueue(True)
 
     reload_flask = False
-    if environ.get('RELOAD_FLASK') is not None:
-        reload_flask = True
+    # if environ.get('RELOAD_FLASK') is not None:
+    #     reload_flask = True
 
     app = app.create_app(DevelopmentConfig)
     app.run(host='0.0.0.0', use_reloader=reload_flask)
-
-    # TODO Turn off the damn pump....
 
     for a in own_plants:
         a.cleanup()

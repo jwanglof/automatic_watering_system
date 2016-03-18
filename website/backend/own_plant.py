@@ -11,6 +11,8 @@ from AutomaticWateringSystem import AutomaticWateringSystem
 from website.AWSError import AWSError
 from website.forms.OwnPlantForm import OwnPlantForm
 
+from utils.class_instances import own_plants
+
 blueprint = Blueprint('own_plant', __name__, url_prefix='/own_plant')
 
 
@@ -49,7 +51,7 @@ def teardown_request(exception):
 @blueprint.route('/', methods=['GET'])
 def get_plants():
     """Return all own plants in a list"""
-    plants = list(r.table(DB.TABLE_OWN_PLANT).run(g.rdb_conn))
+    plants = list(r.table(DB.TABLE_OWN_PLANT).filter(r.row['active'], default=False).run(g.rdb_conn))
     return render_template('own_plant/all_own_plants.html', plants=plants)
 
 
@@ -70,12 +72,12 @@ def new_plant():
 
     # Don't allow the user to see the form if there isn't any plants added
     if existing_plants.count().run(g.rdb_conn) is 0:
-        raise AWSError('You must add a plant before you can add anything else!', status_code=503)
+        raise AWSError('You must add a plant before you can add your own plant!', status_code=503)
 
     existing_pumps = r.table(DB.TABLE_PUMP)
 
     if existing_pumps.count().run(g.rdb_conn) is 0:
-        raise AWSError('You must add a pump before you can add anything else!', status_code=503)
+        raise AWSError('You must add a pump before you can add your own plant!', status_code=503)
 
     form = OwnPlantForm()
     # Populate the plant-drop down
@@ -88,13 +90,13 @@ def new_plant():
             uuid = inserted['generated_keys'][0]
 
             # Add the newly added plant so we can execute reads on it!
-            AutomaticWateringSystem(uuid=uuid,
-                                    name=form.data['name'],
-                                    temperature_pin=form.data.get(form.temperature_sensor_pin.id),
-                                    magnetic_valve_pin=form.data.get(form.magnetic_valve_pin.id),
-                                    moisture_pin=form.data.get(form.moisture_sensor_pin.id),
-                                    debug=True,
-                                    gpio_debug=False)
+            own_plants[uuid] = AutomaticWateringSystem(uuid=uuid,
+                                                       name=form.data['name'],
+                                                       temperature_pin=form.data.get(form.temperature_sensor_pin.id),
+                                                       magnetic_valve_pin=form.data.get(form.magnetic_valve_pin.id),
+                                                       moisture_pin=form.data.get(form.moisture_sensor_pin.id),
+                                                       debug=True,
+                                                       gpio_debug=False)
 
             # return jsonify(id=inserted['generated_keys'][0])
             return redirect(url_for('own_plant.get_plants'))
@@ -110,9 +112,13 @@ def delete_plant(delete_id):
     :type delete_id: str
     :param delete_id:
     """
-    print delete_id
-    # deletion = r.table(DB.TABLE_OWN_PLANT).get(delete_id).delete().run(g.rdb_conn)
-    # if deletion.get('deleted') is 1:
-    #     return delete_id
-    # else:
-    #     abort(400, 'Invalid ID!')
+    # Remove the plant from the instances
+    removed_plant = own_plants.pop(delete_id, None)
+    removed_plant.cleanup()
+
+    # Try and remove it from the database
+    deletion = r.table(DB.TABLE_OWN_PLANT).get(delete_id).delete().run(g.rdb_conn)
+    if deletion.get('deleted') is 1:
+        return delete_id
+    else:
+        abort(400, 'Invalid ID!')

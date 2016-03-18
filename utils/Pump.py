@@ -13,25 +13,39 @@ from utils.print_debug import print_debug
 from AWS.MagneticValve import MagneticValve
 
 
-class Pump:
+class Pump(object):
     """
     Simple class that helps to open and close a pump that is connected to the board
     One instance represents one pump
     """
 
+    instances = {}
+
     opened = 'OPENED'
     closed = 'CLOSED'
 
-    def __init__(self, pin, name, debug=False, gpio_debug=False):
+    def __init__(self, uuid, pin, name, debug=False, gpio_debug=False):
         print_debug(debug, currentframe().f_code.co_name, 'Init pump: %s' % name, __name__)
 
+        # Make sure we only have one instance per pump
+        if uuid in self.instances:
+            error = ValueError
+            error.message = 'A pump-instance with ID "%i" already exist!' % uuid
+            raise error
+
+        # Add the new instance to the instances-list
+        Pump.instances[uuid] = self
+
+        self.uuid = uuid
         self.pin = pin
         self.name = name
         self.digital_pin = digitalPins.get(pin)
         self.debug = debug
 
-        all_params_str = u'Pin: {pin}. Name: {name}'.format(
+        all_params_str = u'Uuid: {uuid}. Pin: {pin}. Digital pin: {dpin}. Name: {name}'.format(
+            uuid=uuid,
             pin=pin,
+            dpin=self.digital_pin,
             name=name,
         )
         print_debug(debug, currentframe().f_code.co_name, all_params_str, __name__)
@@ -40,7 +54,7 @@ class Pump:
         self.gpio = GPIO(debug=gpio_debug)  # type: GPIO
 
         # Set the pump to output
-        self.gpio.pinMode(pin, self.gpio.OUTPUT)
+        self.gpio.pinMode(self.digital_pin, self.gpio.OUTPUT)
 
         # Set the pumps initial status to closed
         self.__status = self.closed
@@ -91,3 +105,7 @@ class Pump:
     @property
     def is_opened(self):
         return self.__status is self.opened
+
+    @property
+    def get_instances(self):
+        return self.instances

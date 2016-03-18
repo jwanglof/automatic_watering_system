@@ -4,6 +4,31 @@
 
 {% block body %}
 
-    {{ plants }}
+    <table>
+        <tr>
+            <th>Name</th>
+            <th>Description</th>
+            <th>Created</th>
+            <th>Location</th>
+            <th>Digital pin</th>
+        </tr>
+
+    {% for p in pumps %}
+
+        <tr id="{{ p['id'] }}">
+            <td>{{ p['name'] }}</td>
+            <td>{{ p['description'] }}</td>
+            <td>{{ p['created'] | datetimefilter }}</td>
+            <td>{{ p['location'] }}</td>
+            <td>{{ p['pin'] }}</td>
+            <td><a data-pump-id="{{ p['id'] }}"
+                   data-delete-url="{{ url_for('pump.delete_pump', delete_id=p['id']) }}"
+                   class="remove_pump">Delete</a></td>
+            <td>Edit</td>
+        </tr>
+
+    {% endfor %}
+
+    </table>
 
 {% endblock %}
