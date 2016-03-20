@@ -188,7 +188,11 @@ class WateringQueue:
         print_debug(self.debug, currentframe().f_code.co_name,
                     'Removing from queue: {name}'.format(name=valve.get_name), __name__)
 
-        self.queue.remove(valve)
+        try:
+            self.queue.remove(valve)
+        except ValueError:
+            print "Could not remove the valve, it's not in the list. Valve name: {valve_name}!"\
+                .format(valve_name=valve.get_name)
 
     def __open_current(self, valve):
         """
