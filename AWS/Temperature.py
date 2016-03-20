@@ -58,6 +58,10 @@ class Temperature:
         self.__celsius_threshold = celsius_threshold
         self.debug = debug
 
+        # TODO Implement this!!
+        self.min_celsius = 0
+        self.max_celsius = 0
+
         # Set the pin to analog input so we can get the temperature from it
         self.gpio.pinMode(self.analog_pin, self.gpio.ANALOG_INPUT)
 
