@@ -11,7 +11,7 @@ from AWS.Moisture import Moisture
 from AWS.Temperature import Temperature
 from utils.print_debug import print_debug
 
-from utils.Database import Database
+from utils import Database
 
 
 class AutomaticWateringSystem(object):
@@ -71,7 +71,7 @@ class AutomaticWateringSystem(object):
         # self.__uuid = str(uuid4())  # type: uuid4
         self.__uuid = uuid
 
-        self.DB = Database()
+        self.DB = Database.Database()
         self.db_own_plant = self.DB.get_own_plant_from_id(self.get_uuid)
         self.db_plant = self.DB.get_plant_from_id(self.db_own_plant.get('plant_id'))
         self.db_pump = self.DB.get_pump_from_id(self.db_own_plant.get('pump_id'))
@@ -122,7 +122,7 @@ class AutomaticWateringSystem(object):
         new_timer_uuid = str(uuid.uuid4())
 
         print_debug(self.debug, currentframe().f_code.co_name,
-                    u'New timer starting with time {time}. AWS name: {name}. Timer UUID: {uuid}'
+                    u'New timer will start after {time} second(s). AWS name: {name}. Timer UUID: {uuid}'
                     .format(time=time, name=self.get_name, uuid=new_timer_uuid), __name__)
 
         self.timer = Timer(time, self.__run, [new_timer_uuid])
@@ -132,25 +132,42 @@ class AutomaticWateringSystem(object):
         """
         Run the different checks, and open the valve if needed!
         This function should not be called directly! Call __start_new_timer() instead!
+
+        :type timer_id: str
+        :param timer_id: A unique identifier for each timer
         """
         self.__run_count += 1
         print_debug(self.debug, currentframe().f_code.co_name,
-                    u'Timer executed. AWS name: {name}. Timer UUID: {timer_id}'
+                    u'Timer executing. AWS name: {name}. Timer UUID: {timer_id}'
                     .format(name=self.get_name, timer_id=timer_id), __name__)
         print_debug(self.debug, currentframe().f_code.co_name, u'Run count: %s' % self.__run_count, __name__)
+
         temp_exceed = False
-        moist_exceed = False
+        moist_deceed = False
+
+        stats_dict = {Database.TABLE_STATISTICS_RUN_COUNT: self.__run_count}
 
         if self.TemperatureSensor:
+            stats_dict[Database.TABLE_STATISTICS_TEMPERATURE_RAW] = self.TemperatureSensor.get_raw_read()
+            stats_dict[Database.TABLE_STATISTICS_TEMPERATURE_MIN_CELSIUS] = self.TemperatureSensor.min_celsius
+            stats_dict[Database.TABLE_STATISTICS_TEMPERATURE_MAX_CELSIUS] = self.TemperatureSensor.max_celsius
+            stats_dict[Database.TABLE_STATISTICS_TEMPERATURE_CELSIUS] = self.TemperatureSensor.get_celsius()
             temp_exceed = self.TemperatureSensor.has_exceeded_threshold()
 
         if self.MoistureSensor:
-            moist_exceed = self.MoistureSensor.has_deceeded_threshold()
+            stats_dict[Database.TABLE_STATISTICS_MOISTURE_RAW] = self.MoistureSensor.get_raw_read()
+            stats_dict[Database.TABLE_STATISTICS_MOISTURE_MIN_PERCENT] = self.MoistureSensor.min_percent
+            stats_dict[Database.TABLE_STATISTICS_MOISTURE_MAX_PERCENT] = self.MoistureSensor.max_percent
+            stats_dict[Database.TABLE_STATISTICS_MOISTURE_PERCENT] = self.MoistureSensor.get_percent_read()
+            moist_deceed = self.MoistureSensor.has_deceeded_threshold()
 
         print_debug(self.debug, currentframe().f_code.co_name, u'Temp exceed: %s' % str(temp_exceed), __name__)
-        print_debug(self.debug, currentframe().f_code.co_name, u'Moist exceed: %s' % str(moist_exceed), __name__)
+        print_debug(self.debug, currentframe().f_code.co_name, u'Moist deceed: %s' % str(moist_deceed), __name__)
 
-        if moist_exceed:
+        # Add statistics
+        self.DB.add_statistic(self.get_uuid, **stats_dict)
+
+        if moist_deceed:
             # Try to open the valve
             self.MagneticValve.send_open_valve_signal()
 
@@ -159,6 +176,7 @@ class AutomaticWateringSystem(object):
                     .format(name=self.get_name, timer_id=timer_id), __name__)
 
         self.__start_new_timer(10)
+        # self.__start_new_timer()
 
     def cleanup(self):
         """

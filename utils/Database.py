@@ -2,10 +2,9 @@
 # coding=utf-8
 from os import environ
 from time import time
-import rethinkdb as r
-from rethinkdb.errors import RqlRuntimeError, ReqlUserError
 
-from website.forms.PlantForm import PlantForm
+import rethinkdb as r
+from rethinkdb.errors import ReqlUserError
 
 try:
     RDB_HOST = environ["RDB_HOST"]
@@ -18,10 +17,16 @@ DB_AWS = 'aws'
 
 TABLE_STATISTICS = 'statistics'
 TABLE_STATISTICS_CREATED = 'created'
-TABLE_STATISTICS_TYPE = 'type'
-TABLE_STATISTICS_RAW_MOISTURE = 'raw_moisture'
-TABLE_STATISTICS_RAW_TEMPERATURE = 'raw_temperature'
+TABLE_STATISTICS_MOISTURE_RAW = 'moisture_raw'
+TABLE_STATISTICS_MOISTURE_PERCENT = 'moisture_percent'
+TABLE_STATISTICS_MOISTURE_MIN_PERCENT = 'moisture_min_percent'
+TABLE_STATISTICS_MOISTURE_MAX_PERCENT = 'moisture_max_percent'
+TABLE_STATISTICS_TEMPERATURE_RAW = 'temperature_raw'
+TABLE_STATISTICS_TEMPERATURE_CELSIUS = 'temperature_celsius'
+TABLE_STATISTICS_TEMPERATURE_MIN_CELSIUS = 'temperature_min_celsius'
+TABLE_STATISTICS_TEMPERATURE_MAX_CELSIUS = 'temperature_max_celsius'
 TABLE_STATISTICS_OWN_PLANT_ID = 'plant_id'  # 'foreign key' to own_plant.id
+TABLE_STATISTICS_RUN_COUNT = 'run_count'
 
 TABLE_PLANT = 'plant'
 TABLE_PLANT_CREATED = 'created'
@@ -56,29 +61,6 @@ class Database(object):
     def __init__(self, db_host=None, db_port=None):
         self.db_host = db_host or RDB_HOST
         self.db_port = db_port or RDB_PORT
-
-
-        # self.tables = {
-        #     'temperature': {
-        #         'raw_value': 'raw_value',
-        #         'plant_id': 'plant_id',
-        #         'moisture_id': 'moisture_id',
-        #         'created': 'created'
-        #     },
-        #     'plant': {
-        #         'created': 'created'
-        #     },
-        #     'moisture': {
-        #         'raw_value': 'raw_value',
-        #         'plant_id': 'plant_id',
-        #         'temperature_id': 'temperature_id',
-        #         'created': 'created'
-        #     }
-        # }
-
-        # self.connection = r.connect(host=self.db_host, port=self.db_port)
-        # self.create_db_structure(self.connection)
-        # self.connection.close()
 
     def __setup_connection(self):
         self.connection = r.connect(host=self.db_host, port=self.db_port, db=DB_AWS)
@@ -171,17 +153,44 @@ class Database(object):
         self.__tear_down_connection()
         return a
 
-    # # def add_statistic(self, moisture, temperature, plant_id):
-    # def add_statistic(self, **kwargs):
-    #     self.__setup_connection()
-    #     r.table(TABLE_STATISTICS).insert({
-    #         TABLE_STATISTICS_CREATED: time(),
-    #         TABLE_STATISTICS_RAW_MOISTURE: kwargs.get('moisture', 0),
-    #         TABLE_STATISTICS_RAW_TEMPERATURE: kwargs.get('temperature', 0)#,
-    #         # TABLE_STATISTICS_OWN_PLANT_ID: kwargs.get('own_plant_id', )
-    #     }).run(self.connection)
-    #     self.__tear_down_connection()
-    #
+    # def add_statistic(self, moisture, temperature, plant_id):
+    def add_statistic(self, own_plant_id, **kwargs):
+        """
+        Add statistics to the database
+
+        :type own_plant_id: str
+        :param own_plant_id:
+
+        :param kwargs:
+        """
+
+        insert_dict = {
+            TABLE_STATISTICS_CREATED: time(),
+            TABLE_STATISTICS_OWN_PLANT_ID: own_plant_id
+        }
+
+        if kwargs.get(TABLE_STATISTICS_RUN_COUNT) is not None:
+            insert_dict[TABLE_STATISTICS_RUN_COUNT] = kwargs.get(TABLE_STATISTICS_RUN_COUNT)
+
+        if kwargs.get(TABLE_STATISTICS_MOISTURE_RAW) is not None:
+            insert_dict[TABLE_STATISTICS_MOISTURE_RAW] = kwargs.get(TABLE_STATISTICS_MOISTURE_RAW)
+            insert_dict[TABLE_STATISTICS_MOISTURE_MIN_PERCENT] = kwargs.get(TABLE_STATISTICS_MOISTURE_MIN_PERCENT)
+            insert_dict[TABLE_STATISTICS_MOISTURE_MAX_PERCENT] = kwargs.get(TABLE_STATISTICS_MOISTURE_MAX_PERCENT)
+            insert_dict[TABLE_STATISTICS_MOISTURE_PERCENT] = kwargs.get(TABLE_STATISTICS_MOISTURE_PERCENT)
+
+        if kwargs.get(TABLE_STATISTICS_TEMPERATURE_RAW) is not None:
+            insert_dict[TABLE_STATISTICS_TEMPERATURE_RAW] = kwargs.get(TABLE_STATISTICS_TEMPERATURE_RAW)
+            insert_dict[TABLE_STATISTICS_TEMPERATURE_MIN_CELSIUS] = kwargs.get(TABLE_STATISTICS_TEMPERATURE_MIN_CELSIUS)
+            insert_dict[TABLE_STATISTICS_TEMPERATURE_MAX_CELSIUS] = kwargs.get(TABLE_STATISTICS_TEMPERATURE_MAX_CELSIUS)
+            insert_dict[TABLE_STATISTICS_TEMPERATURE_CELSIUS] = kwargs.get(TABLE_STATISTICS_TEMPERATURE_CELSIUS)
+
+        if own_plant_id is not None:
+            self.__setup_connection()
+            r.table(TABLE_STATISTICS).insert(insert_dict).run(self.connection)
+            self.__tear_down_connection()
+        else:
+            raise ReqlUserError
+
     # def add_plant(self, **kwargs):
     #     # Name is required
     #     if kwargs.get('name') is not None:
@@ -189,10 +198,10 @@ class Database(object):
     #         r.table_create(TABLE_PLANT).insert({
     #             TABLE_PLANT_CREATED: time(),
     #             TABLE_PLANT_NAME: kwargs.get('name'),
-    #             TABLE_PLANT_MAX_TEMPERATURE: kwargs.get('max_temperature', 125),
-    #             TABLE_PLANT_MIN_TEMPERATURE: kwargs.get('min_temperature', -40),
-    #             TABLE_PLANT_MAX_MOISTURE: kwargs.get('max_moisture', 1),
-    #             TABLE_PLANT_MIN_MOISTURE: kwargs.get('min_moisture', 0)
+    #             TABLE_PLANT_MAX_TEMPERATURE: kwargs.get('max_temperature', None),
+    #             TABLE_PLANT_MIN_TEMPERATURE: kwargs.get('min_temperature', None),
+    #             TABLE_PLANT_MAX_MOISTURE: kwargs.get('max_moisture', None),
+    #             TABLE_PLANT_MIN_MOISTURE: kwargs.get('min_moisture', None)
     #         })
     #         self.__tear_down_connection()
     #     else:

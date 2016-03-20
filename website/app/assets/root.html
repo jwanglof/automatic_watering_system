@@ -4,6 +4,31 @@
 
 {% block body -%}
 
-    <h1>This is the first page of the awesome Automatic Watering System-webpage!</h1>
+    <h1>This is the first page of the awesome Automatic Watering System-webpage, and here are som stats!</h1>
+
+    <table>
+        <tr>
+            <th>Plant ID</th>
+            <th>Created</th>
+            <th>Moisture min percent</th>
+            <th>Moisture max percent</th>
+            <th>Moisture current percent</th>
+            <th>Run count</th>
+        </tr>
+
+    {% for s in stats %}
+
+        <tr id="{{ s['id'] }}">
+            <td>{{ s['plant_id'][:10] }}...</td>
+            <td>{{ s['created'] | datetimefilter }}</td>
+            <td>{{ s['moisture_min_percent'] }}%</td>
+            <td>{{ s['moisture_max_percent'] }}%</td>
+            <td>{{ s['moisture_percent'] }}%</td>
+            <td>{{ s['run_count'] }}</td>
+        </tr>
+
+    {% endfor %}
+
+    </table>
 
 {% endblock %}
